@@ -101,7 +101,7 @@ class HooverApplicationTests {
 		RequestDTO request = new RequestDTO();
 		request.setCoords(new int[] { 1, 2 });
 		request.setRoomSize(new int[] { 5, 5 });
-		request.setInstructions("ANNESEESWNWW");
+		request.setInstructions("ABB");
 		List<int[]> patches = new ArrayList<int[]>();
 		patches.add(new int[] { 1, 0 });
 		patches.add(new int[] { 2, 2 });

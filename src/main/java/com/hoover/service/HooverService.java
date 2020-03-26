@@ -10,6 +10,7 @@ import com.hoover.dto.RequestDTO;
 import com.hoover.dto.ResponseDTO;
 import com.hoover.exception.ApplicationException;
 import com.hoover.resource.HooverResource;
+import com.hoover.util.DirectionsEnum;
 
 /**
  * HooverService .java - This is service class
@@ -20,7 +21,7 @@ import com.hoover.resource.HooverResource;
 @Service
 public class HooverService {
 
-	private static final Logger LOGGER = Logger.getLogger(HooverResource.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(HooverService.class.getName());
 
 	/**
 	 * Calculates coordinates based on directions provided. Check if the calculated
@@ -39,7 +40,7 @@ public class HooverService {
 		List<int[]> patches = request.getPatches();
 		List<int[]> patchesRemoved = new ArrayList<int[]>(patches.size());
 		int[] roomSize = request.getRoomSize();
-		
+
 		if (isCoordsValid(coords, roomSize) && isPatchesValid(patches, roomSize)) { // checking if coords provided are
 																					// valid
 			for (char instruction : instructions) {
@@ -53,6 +54,23 @@ public class HooverService {
 		}
 		return response;
 
+	}
+
+	/**
+	 * Check if the calculated coordinates are valid
+	 * 
+	 * @throws ApplicationException
+	 * 
+	 */
+	private Boolean isCoordsValid(int[] coords, int[] roomSize) throws ApplicationException {
+		if (coords[0] < 0 || coords[1] < 0) {
+			throw new ApplicationException("Coodinates provided are invalid");
+		} else if (coords[0] > roomSize[0] || coords[1] > roomSize[1]) {
+			LOGGER.warning("Calculated coordinates " + coords[0] + coords[1] + " exceeds the room size " + roomSize[0]
+					+ roomSize[1]);
+			throw new ApplicationException("Calculated coordinates exceeds the room size");
+		}
+		return true;
 	}
 
 	private boolean isPatchesValid(List<int[]> patches, int[] roomSize) throws ApplicationException {
@@ -69,40 +87,18 @@ public class HooverService {
 	 * @throws ApplicationException
 	 **/
 	private void navigate(int[] coords, char instruction) throws ApplicationException {
-		switch (Character.toUpperCase(instruction)) {
-		case 'N':
+		if (Character.toUpperCase(instruction) == DirectionsEnum.North.asChar())
 			coords[1] = coords[1] + 1;
-			break;
-		case 'E':
+		else if (Character.toUpperCase(instruction) == DirectionsEnum.East.asChar())
 			coords[0] = coords[0] + 1;
-			break;
-		case 'S':
+		else if (Character.toUpperCase(instruction) == DirectionsEnum.South.asChar())
 			coords[1] = coords[1] - 1;
-			break;
-		case 'W':
+		else if (Character.toUpperCase(instruction) == DirectionsEnum.West.asChar())
 			coords[0] = coords[0] - 1;
-			break;
-		default:
+		else {
 			LOGGER.warning("Invalid Direction " + instruction);
 			throw new ApplicationException("Invalid Direction Provided. Accepted values are N, S, E, W");
 		}
-	}
-
-	/**
-	 * Check if the calculated coordinates is valid
-	 * 
-	 * @throws ApplicationException
-	 * 
-	 */
-	private Boolean isCoordsValid(int[] coords, int[] roomSize) throws ApplicationException {
-		if (coords[0] < 0 || coords[1] < 0) {
-			throw new ApplicationException("Coodinates provided are invalid");
-		} else if (coords[0] > roomSize[0] || coords[1] > roomSize[1]) {
-			LOGGER.warning("Calculated coordinates " + coords[0] + coords[1] + " exceeds the room size " + roomSize[0]
-					+ roomSize[1]);
-			throw new ApplicationException("Calculated coordinates exceeds the room size");
-		}
-		return true;
 	}
 
 	/**

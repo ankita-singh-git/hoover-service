@@ -42,7 +42,7 @@ public class HooverResource {
 	 * @return A ResponseDTO object.
 	 */
 	@PostMapping
-	@ApiOperation(value = "Navigates and cleans dirt")
+	@ApiOperation(value = "Navigates and cleans dirt patches")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully navigated"),
 			@ApiResponse(code = 400, message = "Invalid request") })
 	public ResponseEntity<Object> navigateAndClean(@Valid @RequestBody RequestDTO request) {
