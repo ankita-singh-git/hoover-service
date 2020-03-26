@@ -11,7 +11,7 @@ For building and running the application you need:
 
 There are several ways to run a Spring Boot application on your local machine. One way is to execute the `main` method in the `com.hoover.HooverApplication` class from your IDE.
 
-Alternatively you can run below command on command propmt :
+Alternatively, you can run below command on command prompt :
 
 ```
 mvn package spring-boot:run
