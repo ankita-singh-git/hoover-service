@@ -25,6 +25,7 @@ import com.hoover.dto.RequestDTO;
 import com.hoover.dto.ResponseDTO;
 import com.hoover.exception.ApplicationException;
 import com.hoover.service.HooverService;
+import com.hoover.util.DirectionsEnum;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,6 +34,8 @@ class HooverApplicationTests {
 	@Autowired
 	private MockMvc mvc;
 
+	//Test cases for service
+	
 	@Test
 	public void When_InvalidRequest_ServiceReturnsError() throws Exception {
 		RequestDTO request = new RequestDTO();
@@ -41,9 +44,49 @@ class HooverApplicationTests {
 				() -> service.navigateAndClean(request));
 		assertTrue(exception.getMessage().contains("Invalid Request"));
 	}
+	@Test
+	public void When_ValidCoordsAndDirections_Navigate() throws Exception {
+		int[] coords = new int[] { 1, 2 };
+		Character instruction = DirectionsEnum.North.asChar();
+
+		HooverService service = new HooverService();
+		service.navigate(coords, instruction);
+
+		assertTrue(coords[0] == 1);
+		assertTrue(coords[1] == 3);
+	}
+	
+	@Test
+	public void When_InvalidDirections_Navigate() throws Exception {
+		int[] coords = new int[] { 1, 2 };
+		Character instruction = 'A';
+
+		HooverService service = new HooverService();
+
+		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
+				() -> service.navigate(coords, instruction));
+		assertTrue(exception.getMessage().contains("Invalid Direction Provided. Accepted values are N, S, E, W"));
+		
+	}
 
 	@Test
-	public void When_InvalidCoords_ServiceReturnsError() throws Exception {
+	public void When_ValidCoords_CleanPatches() throws Exception {
+		int[] coords = new int[] { 1, 2 };
+		List<int[]> patches = new ArrayList<int[]>();
+		patches.add(new int[] { 1, 2 });
+		patches.add(new int[] { 2, 2 });
+		patches.add(new int[] { 2, 3 });
+
+		List<int[]> patchesRemoved = new ArrayList<int[]>();
+
+		HooverService service = new HooverService();
+		service.cleanPatches(coords, patches, patchesRemoved);
+
+		assertTrue(patchesRemoved.size() == 1);
+	}
+	
+	@Test
+	public void When_CoordsMissing_ServiceReturnsError() throws Exception {
 		RequestDTO request = new RequestDTO();
 		request.setRoomSize(new int[] { 5, 5 });
 		request.setInstructions("NNESEESWNWW");
@@ -59,6 +102,43 @@ class HooverApplicationTests {
 		assertTrue(exception.getMessage().contains("Invalid Request"));
 	}
 
+	@Test
+	public void When_InvalidDirections_ServiceReturnsError() throws Exception {
+		RequestDTO request = new RequestDTO();
+		request.setCoords(new int[] { 1, 2 });
+		request.setRoomSize(new int[] { 5, 5 });
+		request.setInstructions("ABCD");
+		List<int[]> patches = new ArrayList<int[]>();
+		patches.add(new int[] { 1, 0 });
+		patches.add(new int[] { 2, 2 });
+		patches.add(new int[] { 2, 3 });
+		request.setPatches(patches);
+
+		HooverService service = new HooverService();
+		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
+				() -> service.navigateAndClean(request));
+		assertTrue(exception.getMessage().contains("Invalid Direction Provided. Accepted values are N, S, E, W"));
+	}
+	
+	@Test
+	public void When_CoordsExceedsRoomSize_ServiceReturnsError() throws Exception {
+		RequestDTO request = new RequestDTO();
+		request.setCoords(new int[] { 5, 5 });
+		request.setRoomSize(new int[] { 5, 5 });
+		request.setInstructions("NWE");
+		List<int[]> patches = new ArrayList<int[]>();
+		patches.add(new int[] { 1, 0 });
+		patches.add(new int[] { 2, 2 });
+		patches.add(new int[] { 2, 3 });
+		request.setPatches(patches);
+
+		HooverService service = new HooverService();
+		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
+				() -> service.navigateAndClean(request));
+		assertTrue(exception.getMessage().contains("Calculated coordinates exceeds the room size"));
+	}
+
+	
 	@Test
 	public void When_ValidRequest_ServiceReturnsResponse() throws Exception {
 		RequestDTO request = new RequestDTO();
@@ -77,6 +157,8 @@ class HooverApplicationTests {
 		assertTrue(dto.getCoords()[0] == 1);
 		assertTrue(dto.getCoords()[1] == 3);
 	}
+
+	//Test cases for API
 
 	@Test
 	public void When_InvalidRequest_ReturnError() throws Exception {

@@ -48,7 +48,7 @@ public class HooverService {
 				for (char instruction : instructions) {
 					navigate(coords, instruction);
 					if (isCoordsValid(coords, roomSize)) { // checking if calculated coords are valid
-						cleanPatches(coords, patches, patchesRemoved, roomSize);
+						cleanPatches(coords, patches, patchesRemoved);
 					}
 				}
 				patches.removeAll(patchesRemoved);
@@ -60,8 +60,8 @@ public class HooverService {
 	}
 
 	private boolean isValidRequest(RequestDTO request) throws ApplicationException {
-		if (request.getCoords() == null || request.getInstructions() == null || request.getPatches() == null
-				|| request.getRoomSize() == null) {
+		if (request.getCoords() == null || request.getCoords()[0] < 0 || request.getCoords()[1] < 0 || request.getInstructions() == null || request.getPatches() == null
+				|| request.getRoomSize() == null || request.getRoomSize()[0] < 0 || request.getRoomSize()[1] < 0) {
 			throw new ApplicationException("Invalid Request");
 		}
 		return true;
@@ -97,7 +97,7 @@ public class HooverService {
 	 * 
 	 * @throws ApplicationException
 	 **/
-	private void navigate(int[] coords, char instruction) throws ApplicationException {
+	public void navigate(int[] coords, char instruction) throws ApplicationException {
 		if (Character.toUpperCase(instruction) == DirectionsEnum.North.asChar())
 			coords[1] = coords[1] + 1;
 		else if (Character.toUpperCase(instruction) == DirectionsEnum.East.asChar())
@@ -118,7 +118,7 @@ public class HooverService {
 	 * @throws ApplicationException
 	 * 
 	 */
-	private void cleanPatches(int[] coords, List<int[]> patches, List<int[]> patchesRemoved, int[] roomSize)
+	public void cleanPatches(int[] coords, List<int[]> patches, List<int[]> patchesRemoved)
 			throws ApplicationException {
 		for (int[] patch : patches) {
 			if (patch[0] == coords[0] && patch[1] == coords[1]) {
