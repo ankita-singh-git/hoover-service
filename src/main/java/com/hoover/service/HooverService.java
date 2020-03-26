@@ -34,29 +34,37 @@ public class HooverService {
 		LOGGER.info("Inside navigateAndClean method " + LOGGER.getName());
 
 		ResponseDTO response = null;
-		int[] coords = request.getCoords();
-		char[] instructions = null;
-		if(request.getInstructions() != null)
-			instructions = request.getInstructions().toCharArray();
-		else 
-			throw new ApplicationException("Invalid instructions provided");
-		List<int[]> patches = request.getPatches();
-		List<int[]> patchesRemoved = new ArrayList<int[]>(patches.size());
-		int[] roomSize = request.getRoomSize();
 
-		if (isCoordsValid(coords, roomSize) && isPatchesValid(patches, roomSize)) { // checking if coords provided are
-																					// valid
-			for (char instruction : instructions) {
-				navigate(coords, instruction);
-				if (isCoordsValid(coords, roomSize)) { // checking if calculated coords are valid
-					cleanPatches(coords, patches, patchesRemoved, roomSize);
+		if (isValidRequest(request)) {
+			int[] coords = request.getCoords();
+			char[] instructions = request.getInstructions().toCharArray();
+			List<int[]> patches = request.getPatches();
+			List<int[]> patchesRemoved = new ArrayList<int[]>(patches.size());
+			int[] roomSize = request.getRoomSize();
+
+			if (isCoordsValid(coords, roomSize) && isPatchesValid(patches, roomSize)) { // checking if coords provided
+																						// are
+																						// valid
+				for (char instruction : instructions) {
+					navigate(coords, instruction);
+					if (isCoordsValid(coords, roomSize)) { // checking if calculated coords are valid
+						cleanPatches(coords, patches, patchesRemoved, roomSize);
+					}
 				}
+				patches.removeAll(patchesRemoved);
+				response = new ResponseDTO(coords, patchesRemoved.size());
 			}
-			patches.removeAll(patchesRemoved);
-			response = new ResponseDTO(coords, patchesRemoved.size());
-		}
+		} 
 		return response;
 
+	}
+
+	private boolean isValidRequest(RequestDTO request) throws ApplicationException {
+		if (request.getCoords() == null || request.getInstructions() == null || request.getPatches() == null
+				|| request.getRoomSize() == null) {
+			throw new ApplicationException("Invalid Request");
+		}
+		return true;
 	}
 
 	/**
@@ -66,7 +74,7 @@ public class HooverService {
 	 * 
 	 */
 	private Boolean isCoordsValid(int[] coords, int[] roomSize) throws ApplicationException {
-		if (coords[0] < 0 || coords[1] < 0) {
+		if (coords == null || coords[0] < 0 || coords[1] < 0) {
 			throw new ApplicationException("Coodinates provided are invalid");
 		} else if (coords[0] > roomSize[0] || coords[1] > roomSize[1]) {
 			LOGGER.warning("Calculated coordinates " + coords[0] + coords[1] + " exceeds the room size " + roomSize[0]

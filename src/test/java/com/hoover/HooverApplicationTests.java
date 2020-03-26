@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoover.dto.RequestDTO;
+import com.hoover.dto.ResponseDTO;
 import com.hoover.exception.ApplicationException;
 import com.hoover.service.HooverService;
 
@@ -33,16 +32,50 @@ class HooverApplicationTests {
 
 	@Autowired
 	private MockMvc mvc;
-	
-	@Rule
-	  public final ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void When_InvalidRequest_ServiceReturnsError() throws Exception {
 		RequestDTO request = new RequestDTO();
 		HooverService service = new HooverService();
-		ApplicationException exception = Assertions.assertThrows(ApplicationException.class, () -> service.navigateAndClean(request));
-		assertTrue(exception.getMessage().contains("Invalid instructions provided"));
+		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
+				() -> service.navigateAndClean(request));
+		assertTrue(exception.getMessage().contains("Invalid Request"));
+	}
+
+	@Test
+	public void When_InvalidCoords_ServiceReturnsError() throws Exception {
+		RequestDTO request = new RequestDTO();
+		request.setRoomSize(new int[] { 5, 5 });
+		request.setInstructions("NNESEESWNWW");
+		List<int[]> patches = new ArrayList<int[]>();
+		patches.add(new int[] { 1, 0 });
+		patches.add(new int[] { 2, 2 });
+		patches.add(new int[] { 2, 3 });
+		request.setPatches(patches);
+
+		HooverService service = new HooverService();
+		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
+				() -> service.navigateAndClean(request));
+		assertTrue(exception.getMessage().contains("Invalid Request"));
+	}
+
+	@Test
+	public void When_ValidRequest_ServiceReturnsResponse() throws Exception {
+		RequestDTO request = new RequestDTO();
+		request.setCoords(new int[] { 1, 2 });
+		request.setRoomSize(new int[] { 5, 5 });
+		request.setInstructions("NNESEESWNWW");
+		List<int[]> patches = new ArrayList<int[]>();
+		patches.add(new int[] { 1, 0 });
+		patches.add(new int[] { 2, 2 });
+		patches.add(new int[] { 2, 3 });
+		request.setPatches(patches);
+
+		HooverService service = new HooverService();
+		ResponseDTO dto = service.navigateAndClean(request);
+		assertTrue(dto.getPatches() == 1);
+		assertTrue(dto.getCoords()[0] == 1);
+		assertTrue(dto.getCoords()[1] == 3);
 	}
 
 	@Test
