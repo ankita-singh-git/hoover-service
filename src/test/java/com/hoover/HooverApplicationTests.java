@@ -1,12 +1,16 @@
 package com.hoover;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Rule;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +24,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoover.dto.RequestDTO;
+import com.hoover.exception.ApplicationException;
+import com.hoover.service.HooverService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -27,6 +33,31 @@ class HooverApplicationTests {
 
 	@Autowired
 	private MockMvc mvc;
+	
+	@Rule
+	  public final ExpectedException exception = ExpectedException.none();
+
+	@Test
+	public void When_InvalidRequest_ServiceReturnsError() throws Exception {
+		RequestDTO request = new RequestDTO();
+		HooverService service = new HooverService();
+		ApplicationException exception = Assertions.assertThrows(ApplicationException.class, () -> service.navigateAndClean(request));
+		assertTrue(exception.getMessage().contains("Invalid instructions provided"));
+	}
+
+	@Test
+	public void When_InvalidRequest_ReturnError() throws Exception {
+		String uri = "/hoover";
+		RequestDTO request = new RequestDTO();
+
+		String inputJson = mapToJson(request);
+		MvcResult mvcResult = mvc.perform(
+				MockMvcRequestBuilders.post(uri).contentType(MediaType.APPLICATION_JSON_VALUE).content(inputJson))
+				.andReturn();
+
+		int status = mvcResult.getResponse().getStatus();
+		assertEquals(400, status);
+	}
 
 	@Test
 	public void When_ValidRequest_ReturnResponseObject() throws Exception {

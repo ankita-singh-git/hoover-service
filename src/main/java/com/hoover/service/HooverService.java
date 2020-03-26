@@ -35,7 +35,11 @@ public class HooverService {
 
 		ResponseDTO response = null;
 		int[] coords = request.getCoords();
-		char[] instructions = request.getInstructions().toCharArray();
+		char[] instructions = null;
+		if(request.getInstructions() != null)
+			instructions = request.getInstructions().toCharArray();
+		else 
+			throw new ApplicationException("Invalid instructions provided");
 		List<int[]> patches = request.getPatches();
 		List<int[]> patchesRemoved = new ArrayList<int[]>(patches.size());
 		int[] roomSize = request.getRoomSize();
