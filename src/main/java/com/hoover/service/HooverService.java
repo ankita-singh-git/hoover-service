@@ -37,21 +37,30 @@ public class HooverService {
 		int[] coords = request.getCoords();
 		char[] instructions = request.getInstructions().toCharArray();
 		List<int[]> patches = request.getPatches();
-		List<int[]> patchesRemoved = new ArrayList<int[]>();
+		List<int[]> patchesRemoved = new ArrayList<int[]>(patches.size());
 		int[] roomSize = request.getRoomSize();
-		int count = 0;
-		if (isCoordsValid(coords, roomSize)) { //checking if coords provided are valid
+		
+		if (isCoordsValid(coords, roomSize) && isPatchesValid(patches, roomSize)) { // checking if coords provided are
+																					// valid
 			for (char instruction : instructions) {
 				navigate(coords, instruction);
-				if (isCoordsValid(coords, roomSize)) { //checking if calculated coords are valid
-					count = cleanPatches(coords, patches, patchesRemoved, count, roomSize);
+				if (isCoordsValid(coords, roomSize)) { // checking if calculated coords are valid
+					cleanPatches(coords, patches, patchesRemoved, roomSize);
 				}
 			}
 			patches.removeAll(patchesRemoved);
-			response = new ResponseDTO(coords, count);
+			response = new ResponseDTO(coords, patchesRemoved.size());
 		}
 		return response;
 
+	}
+
+	private boolean isPatchesValid(List<int[]> patches, int[] roomSize) throws ApplicationException {
+		for (int[] patch : patches) {
+			if (!isCoordsValid(patch, roomSize))
+				return false;
+		}
+		return true;
 	}
 
 	/**
@@ -102,19 +111,15 @@ public class HooverService {
 	 * @throws ApplicationException
 	 * 
 	 */
-	private int cleanPatches(int[] coords, List<int[]> patches, List<int[]> patchesRemoved, int count, int[] roomSize)
+	private void cleanPatches(int[] coords, List<int[]> patches, List<int[]> patchesRemoved, int[] roomSize)
 			throws ApplicationException {
 		for (int[] patch : patches) {
-			if (isCoordsValid(patch, roomSize)) { //checking if patch coords are valid
-				if (patch[0] == coords[0] && patch[1] == coords[1]) {
-					if (!patchesRemoved.contains(patch)) {
-						patchesRemoved.add(patch);
-						count++;
-					}
+			if (patch[0] == coords[0] && patch[1] == coords[1]) {
+				if (!patchesRemoved.contains(patch)) {
+					patchesRemoved.add(patch);
 				}
 			}
 		}
-		return count;
 	}
 
 }

@@ -28,7 +28,7 @@ import io.swagger.annotations.ApiResponses;
  * @version 1.0
  */
 @RestController
-@RequestMapping("hoover-resource")
+@RequestMapping("hoover")
 public class HooverResource {
 
 	@Autowired
