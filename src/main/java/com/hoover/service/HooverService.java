@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.hoover.dto.RequestDTO;
 import com.hoover.dto.ResponseDTO;
 import com.hoover.exception.ApplicationException;
-import com.hoover.resource.HooverResource;
 import com.hoover.util.DirectionsEnum;
 
 /**
