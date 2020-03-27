@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.hoover.dto.RequestDTO;
 import com.hoover.dto.ResponseDTO;
 import com.hoover.exception.ApplicationException;
+import com.hoover.util.Constants;
 import com.hoover.util.DirectionsEnum;
 
 /**
@@ -61,7 +62,7 @@ public class HooverService {
 	private boolean isValidRequest(RequestDTO request) throws ApplicationException {
 		if (!isValueValid(request.getCoords(), request.getRoomSize()) || isValueValid(request.getRoomSize()) == null
 				|| request.getInstructions() == null || !isValueValid(request.getPatches(), request.getRoomSize())) {
-			throw new ApplicationException("Invalid Request");
+			throw new ApplicationException(Constants.INVALID_REQUEST_MESSAGE);
 		}
 		return true;
 	}
@@ -87,11 +88,11 @@ public class HooverService {
 	 */
 	private Boolean isValueValid(int[] coords, int[] roomSize) throws ApplicationException {
 		if (!isValueValid(coords)) {
-			throw new ApplicationException("Invalid Request");
+			throw new ApplicationException(Constants.INVALID_REQUEST_MESSAGE);
 		} else if (coords[0] > roomSize[0] || coords[1] > roomSize[1]) {
 			LOGGER.warning(
 					"Coordinates " + coords[0] + coords[1] + " exceeds the room size " + roomSize[0] + roomSize[1]);
-			throw new ApplicationException("Coordinates exceeds the room size");
+			throw new ApplicationException(Constants.INVALID_COORDS);
 		}
 		return true;
 	}
@@ -144,7 +145,7 @@ public class HooverService {
 			coords[0] = coords[0] - 1;
 		else {
 			LOGGER.warning("Invalid Direction " + instruction);
-			throw new ApplicationException("Invalid Direction Provided. Accepted values are N, S, E, W");
+			throw new ApplicationException(Constants.INVALID_DIRECTIONS);
 		}
 		LOGGER.info("Navigated to coords" + coords[0] + "," + coords[1]);
 

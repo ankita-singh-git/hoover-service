@@ -25,6 +25,7 @@ import com.hoover.dto.RequestDTO;
 import com.hoover.dto.ResponseDTO;
 import com.hoover.exception.ApplicationException;
 import com.hoover.service.HooverService;
+import com.hoover.util.Constants;
 import com.hoover.util.DirectionsEnum;
 
 @SpringBootTest
@@ -42,7 +43,7 @@ class HooverApplicationTests {
 		HooverService service = new HooverService();
 		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
 				() -> service.navigateAndClean(request));
-		assertTrue(exception.getMessage().contains("Invalid Request"));
+		assertTrue(exception.getMessage().contains(Constants.INVALID_REQUEST_MESSAGE));
 	}
 	@Test
 	public void When_ValidCoordsAndDirections_Navigate() throws Exception {
@@ -65,7 +66,7 @@ class HooverApplicationTests {
 
 		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
 				() -> service.navigate(coords, instruction));
-		assertTrue(exception.getMessage().contains("Invalid Direction Provided. Accepted values are N, S, E, W"));
+		assertTrue(exception.getMessage().contains(Constants.INVALID_DIRECTIONS));
 		
 	}
 
@@ -100,7 +101,7 @@ class HooverApplicationTests {
 		HooverService service = new HooverService();
 		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
 				() -> service.navigateAndClean(request));
-		assertTrue(exception.getMessage().contains("Invalid Request"));
+		assertTrue(exception.getMessage().contains(Constants.INVALID_REQUEST_MESSAGE));
 	}
 
 	@Test
@@ -118,7 +119,7 @@ class HooverApplicationTests {
 		HooverService service = new HooverService();
 		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
 				() -> service.navigateAndClean(request));
-		assertTrue(exception.getMessage().contains("Invalid Request"));
+		assertTrue(exception.getMessage().contains(Constants.INVALID_REQUEST_MESSAGE));
 	}
 	
 	@Test
@@ -136,7 +137,7 @@ class HooverApplicationTests {
 		HooverService service = new HooverService();
 		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
 				() -> service.navigateAndClean(request));
-		assertTrue(exception.getMessage().contains("Invalid Direction Provided. Accepted values are N, S, E, W"));
+		assertTrue(exception.getMessage().contains(Constants.INVALID_DIRECTIONS));
 	}
 	
 	@Test
@@ -154,7 +155,7 @@ class HooverApplicationTests {
 		HooverService service = new HooverService();
 		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
 				() -> service.navigateAndClean(request));
-		assertTrue(exception.getMessage().contains("Coordinates exceeds the room size"));
+		assertTrue(exception.getMessage().contains(Constants.INVALID_COORDS));
 	}
 
 	
