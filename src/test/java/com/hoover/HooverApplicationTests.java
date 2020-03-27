@@ -85,6 +85,7 @@ class HooverApplicationTests {
 		assertTrue(patchesRemoved.size() == 1);
 	}
 	
+	
 	@Test
 	public void When_CoordsMissing_ServiceReturnsError() throws Exception {
 		RequestDTO request = new RequestDTO();
@@ -102,6 +103,24 @@ class HooverApplicationTests {
 		assertTrue(exception.getMessage().contains("Invalid Request"));
 	}
 
+	@Test
+	public void When_InvalidCoordsSize_ServiceReturnsError() throws Exception {
+		RequestDTO request = new RequestDTO();
+		request.setCoords(new int[] { 1, 2, 3 });
+		request.setRoomSize(new int[] { 5, 5 });
+		request.setInstructions("ABCD");
+		List<int[]> patches = new ArrayList<int[]>();
+		patches.add(new int[] { 1, 0 });
+		patches.add(new int[] { 2, 2 });
+		patches.add(new int[] { 2, 3 });
+		request.setPatches(patches);
+
+		HooverService service = new HooverService();
+		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
+				() -> service.navigateAndClean(request));
+		assertTrue(exception.getMessage().contains("Invalid Request"));
+	}
+	
 	@Test
 	public void When_InvalidDirections_ServiceReturnsError() throws Exception {
 		RequestDTO request = new RequestDTO();
@@ -135,7 +154,7 @@ class HooverApplicationTests {
 		HooverService service = new HooverService();
 		ApplicationException exception = Assertions.assertThrows(ApplicationException.class,
 				() -> service.navigateAndClean(request));
-		assertTrue(exception.getMessage().contains("Calculated coordinates exceeds the room size"));
+		assertTrue(exception.getMessage().contains("Coordinates exceeds the room size"));
 	}
 
 	

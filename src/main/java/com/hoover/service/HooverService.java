@@ -3,6 +3,7 @@ package com.hoover.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -37,59 +38,92 @@ public class HooverService {
 
 		if (isValidRequest(request)) {
 			int[] coords = request.getCoords();
-			char[] instructions = request.getInstructions().toCharArray();
 			List<int[]> patches = request.getPatches();
 			List<int[]> patchesRemoved = new ArrayList<int[]>(patches.size());
-			int[] roomSize = request.getRoomSize();
 
-			if (isCoordsValid(coords, roomSize) && isPatchesValid(patches, roomSize)) { // checking if coords provided
-																						// are
-																						// valid
-				for (char instruction : instructions) {
-					navigate(coords, instruction);
-					if (isCoordsValid(coords, roomSize)) { // checking if calculated coords are valid
-						cleanPatches(coords, patches, patchesRemoved);
-					}
-				}
-				patches.removeAll(patchesRemoved);
-				response = new ResponseDTO(coords, patchesRemoved.size());
-			}
-		} 
+			Stream<Character> charactersStream = request.getInstructions().chars().mapToObj(c -> (char) c);
+			charactersStream.forEach(character -> performOperations(character, request, patchesRemoved));
+
+			patches.removeAll(patchesRemoved);
+			response = new ResponseDTO(coords, patchesRemoved.size());
+		}
 		return response;
 
 	}
 
+	// Validation methods
+	/**
+	 * Check if the request is valid
+	 * 
+	 * @throws ApplicationException
+	 * 
+	 */
 	private boolean isValidRequest(RequestDTO request) throws ApplicationException {
-		if (request.getCoords() == null || request.getCoords()[0] < 0 || request.getCoords()[1] < 0 || request.getInstructions() == null || request.getPatches() == null
-				|| request.getRoomSize() == null || request.getRoomSize()[0] < 0 || request.getRoomSize()[1] < 0) {
+		if (!isValueValid(request.getCoords(), request.getRoomSize()) || isValueValid(request.getRoomSize()) == null
+				|| request.getInstructions() == null || !isValueValid(request.getPatches(), request.getRoomSize())) {
 			throw new ApplicationException("Invalid Request");
 		}
 		return true;
 	}
 
 	/**
-	 * Check if the calculated coordinates are valid
+	 * Check if provided coordinates values are valid
 	 * 
-	 * @throws ApplicationException
+	 * @return false if invalid
 	 * 
 	 */
-	private Boolean isCoordsValid(int[] coords, int[] roomSize) throws ApplicationException {
-		if (coords == null || coords[0] < 0 || coords[1] < 0) {
-			throw new ApplicationException("Coodinates provided are invalid");
-		} else if (coords[0] > roomSize[0] || coords[1] > roomSize[1]) {
-			LOGGER.warning("Calculated coordinates " + coords[0] + coords[1] + " exceeds the room size " + roomSize[0]
-					+ roomSize[1]);
-			throw new ApplicationException("Calculated coordinates exceeds the room size");
+	private Boolean isValueValid(int[] coords) {
+		if (coords == null || coords.length != 2 || coords[0] < 0 || coords[1] < 0) {
+			return false;
 		}
 		return true;
 	}
 
-	private boolean isPatchesValid(List<int[]> patches, int[] roomSize) throws ApplicationException {
+	/**
+	 * Check if the calculated coordinates are valid based on room size
+	 * 
+	 * @throws ApplicationException
+	 * 
+	 */
+	private Boolean isValueValid(int[] coords, int[] roomSize) throws ApplicationException {
+		if (!isValueValid(coords)) {
+			throw new ApplicationException("Invalid Request");
+		} else if (coords[0] > roomSize[0] || coords[1] > roomSize[1]) {
+			LOGGER.warning(
+					"Coordinates " + coords[0] + coords[1] + " exceeds the room size " + roomSize[0] + roomSize[1]);
+			throw new ApplicationException("Coordinates exceeds the room size");
+		}
+		return true;
+	}
+
+	/**
+	 * Check if provided patches are valid for room size
+	 * 
+	 * @return false if invalid
+	 * 
+	 */
+	private boolean isValueValid(List<int[]> patches, int[] roomSize) throws ApplicationException {
 		for (int[] patch : patches) {
-			if (!isCoordsValid(patch, roomSize))
+			if (!isValueValid(patch, roomSize))
 				return false;
 		}
 		return true;
+	}
+
+	// Validation methods ends
+
+	/**
+	 * perform operations like navigate and clean patches
+	 * 
+	 * @throws ApplicationException
+	 * 
+	 */
+	public void performOperations(Character character, RequestDTO request, List<int[]> patchesRemoved)
+			throws ApplicationException {
+		navigate(request.getCoords(), character);
+		if (isValueValid(request.getCoords(), request.getRoomSize())) {
+			cleanPatches(request.getCoords(), request.getPatches(), patchesRemoved);
+		}
 	}
 
 	/**
@@ -98,34 +132,37 @@ public class HooverService {
 	 * @throws ApplicationException
 	 **/
 	public void navigate(int[] coords, char instruction) throws ApplicationException {
-		if (Character.toUpperCase(instruction) == DirectionsEnum.North.asChar())
+		LOGGER.info("Navigating:: current coords" + coords[0] + "," + coords[1] + " direction " + instruction);
+		Character direction = Character.toUpperCase(instruction);
+		if (direction == DirectionsEnum.North.asChar())
 			coords[1] = coords[1] + 1;
-		else if (Character.toUpperCase(instruction) == DirectionsEnum.East.asChar())
+		else if (direction == DirectionsEnum.East.asChar())
 			coords[0] = coords[0] + 1;
-		else if (Character.toUpperCase(instruction) == DirectionsEnum.South.asChar())
+		else if (direction == DirectionsEnum.South.asChar())
 			coords[1] = coords[1] - 1;
-		else if (Character.toUpperCase(instruction) == DirectionsEnum.West.asChar())
+		else if (direction == DirectionsEnum.West.asChar())
 			coords[0] = coords[0] - 1;
 		else {
 			LOGGER.warning("Invalid Direction " + instruction);
 			throw new ApplicationException("Invalid Direction Provided. Accepted values are N, S, E, W");
 		}
+		LOGGER.info("Navigated to coords" + coords[0] + "," + coords[1]);
+
 	}
 
 	/**
-	 * Remove dirt patches if dirt coordinates matches with coordinate calculated
+	 * Removes dirt patches if dirt coordinates matches with coordinates calculated
 	 * 
 	 * @throws ApplicationException
 	 * 
 	 */
 	public void cleanPatches(int[] coords, List<int[]> patches, List<int[]> patchesRemoved)
 			throws ApplicationException {
-		for (int[] patch : patches) {
-			if (patch[0] == coords[0] && patch[1] == coords[1]) {
-				if (!patchesRemoved.contains(patch)) {
-					patchesRemoved.add(patch);
-				}
-			}
+		int[] patch = patches.stream().filter(p -> p[0] == coords[0] && p[1] == coords[1]).findAny().orElse(null);
+
+		if (patch != null && !patchesRemoved.contains(patch)) {
+			patchesRemoved.add(patch);
+			LOGGER.info("Cleaning patch " + patch[0] + "," + patch[1]);
 		}
 	}
 
