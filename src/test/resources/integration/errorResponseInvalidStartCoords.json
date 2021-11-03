@@ -1,0 +1,4 @@
+{
+	"errorCode": 400,
+	"message": "Provided start coords are not valid"
+}

@@ -1,0 +1,25 @@
+{
+	"roomSize": {
+		"x": 5,
+		"y": 5
+	},
+	"coords": {
+		"x": 1,
+		"y": 2
+	},
+	"patches": [
+		{
+			"x": 1,
+			"y": 0
+		},
+		{
+			"x": 2,
+			"y": 2
+		},
+		{
+			"x": 2,
+			"y": 3
+		}
+	],
+	"instructions": "NNESEESWNWW"
+}
